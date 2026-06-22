@@ -79,15 +79,6 @@ export default function RegisterPage() {
         navigate("/login");
     };
 
-    const handleTermsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        navigate("/notfound");
-    };
-
-    const handlePrivacyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        navigate("/notfound");
-    };
 
     return (
         <div className="bg-surface-container-lowest font-body-md text-on-background min-h-screen relative overflow-x-hidden flex flex-col">
@@ -249,13 +240,6 @@ export default function RegisterPage() {
                             )}
                         </div>
 
-                        {/* Terms */}
-                        <p className="text-[12px] text-on-surface-variant leading-relaxed">
-                            By signing up, you agree to our{" "}
-                            <a className="text-primary hover:underline cursor-pointer" onClick={handleTermsClick}>Terms of Service</a>
-                            {" "}and{" "}
-                            <a className="text-primary hover:underline cursor-pointer" onClick={handlePrivacyClick}>Privacy Policy</a>.
-                        </p>
 
                         {/* Submit Button */}
                         <button

@@ -3,6 +3,7 @@ import { Brain, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
 import axios from "axios";
+import { useUserStore } from "../store";
 import Google from "../assets/Google";
 import "../styles/loginPage.css";
 
@@ -23,6 +24,8 @@ export default function LoginPage() {
     const [submitError, setSubmitError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    const loginStore = useUserStore((state) => state.login);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -56,9 +59,14 @@ export default function LoginPage() {
 
         try {
             const response = await axios.post("/users/login", { email, password });
-            if (response.data.success) {
-                // Navigate to WIP/Dashboard upon success
-                navigate("/wip");
+            if (response.data.success || response.data.success === 1) {
+                const userData = response.data.data;
+                loginStore({
+                    id: userData.id || userData._id || "user-id",
+                    name: userData.name || "",
+                    email: userData.email || "",
+                });
+                navigate("/dashboard");
             } else {
                 setSubmitError(response.data.message || "Invalid email or password.");
             }

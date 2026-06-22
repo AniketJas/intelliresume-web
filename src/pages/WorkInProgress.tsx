@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Brain, Sparkles, Hammer, ArrowLeft, Home, CircleHelp } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Brain, Sparkles, Hammer, ArrowLeft, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../styles/workInProgress.css";
 
@@ -26,7 +26,7 @@ export default function WorkInProgress() {
         return () => window.removeEventListener("mousemove", handleMouseMove);
     }, []);
 
-    const particles = useMemo < Particle[] > (() => {
+    const particles = useMemo<Particle[]>(() => {
         return Array.from({ length: 20 }, (_, idx) => {
             const seed1 = idx * 1.5;
             const seed2 = idx * 2.8;
@@ -68,15 +68,6 @@ export default function WorkInProgress() {
         navigate("/");
     };
 
-    const handleSupportClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
-        e.preventDefault();
-        navigate("/notfound");
-    };
-
-    const handleDocumentationClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
-        e.preventDefault();
-        navigate("/notfound");
-    };
 
     return (
         <div className="bg-surface font-body-md text-on-surface overflow-hidden min-h-screen relative flex flex-col">
@@ -250,23 +241,6 @@ export default function WorkInProgress() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 md:mb-0">
                         © 2026 IntelliResume AI. All rights reserved.
                     </p>
-                    <div className="flex gap-8">
-                        <a
-                            onClick={handleSupportClick}
-                            className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
-                            href="#"
-                        >
-                            <CircleHelp className="w-4 h-4" />
-                            Need help? Contact Support
-                        </a>
-                        <a
-                            onClick={handleDocumentationClick}
-                            className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-                            href="#"
-                        >
-                            Documentation
-                        </a>
-                    </div>
                 </footer>
             </div>
         </div>
