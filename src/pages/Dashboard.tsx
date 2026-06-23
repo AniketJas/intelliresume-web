@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/layout/Navbar";
@@ -12,7 +12,7 @@ import "../styles/dashboard.css";
 
 // Interface Definitions
 interface Scan {
-    id: number;
+    id: string;
     filename: string;
     date: string;
     time: string;
@@ -26,11 +26,28 @@ interface Scan {
     recommendedRoles: string[];
 }
 
+interface BackendResume {
+    _id: string;
+    fileName: string;
+    createdAt: string;
+    analysis?: {
+        overallScore?: number;
+        atsScore?: number;
+        strengths?: string[];
+        weaknesses?: string[];
+        missingSkills?: string[];
+        improvements?: string[];
+        recommendedRoles?: string[];
+    };
+}
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const [activeView, setActiveView] = useState<"dashboard" | "history">("dashboard");
     const [selectedScan, setSelectedScan] = useState<Scan | null>(null);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [scans, setScans] = useState<Scan[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const storeUser = useUserStore((state) => state.user);
     const logoutStore = useUserStore((state) => state.logout);
@@ -41,90 +58,51 @@ export default function Dashboard() {
         email: "aniket@example.com",
     };
 
-    // Mock Scan History
-    const scans: Scan[] = [
-        {
-            id: 1,
-            filename: "Product_Manager_Resume_v4.pdf",
-            date: "24 Jun 2026",
-            time: "10:45 AM",
-            score: 92,
-            overallScore: 92,
-            atsScore: 88,
-            strengths: [
-                "Strong technical skills",
-                "Good ATS formatting",
-                "quantified key achievements",
-            ],
-            weaknesses: [
-                "Weak summary section",
-            ],
-            missingSkills: [
-                "Docker",
-                "AWS",
-            ],
-            improvements: [
-                "Add quantified achievements",
-            ],
-            recommendedRoles: [
-                "Full Stack Developer",
-                "Backend Developer",
-            ],
-        },
-        {
-            id: 2,
-            filename: "Software_Engineer_Google_App.pdf",
-            date: "22 Jun 2026",
-            time: "10:45 AM",
-            score: 85,
-            overallScore: 85,
-            atsScore: 78,
-            strengths: [
-                "Clear experience layout",
-                "Highly detailed bullet points",
-            ],
-            weaknesses: [
-                "Too many pages",
-            ],
-            missingSkills: [
-                "Kubernetes",
-                "TypeScript",
-            ],
-            improvements: [
-                "Condense to a single page",
-            ],
-            recommendedRoles: [
-                "Frontend Engineer",
-                "Software Architect",
-            ],
-        },
-        {
-            id: 3,
-            filename: "General_Business_Resume_Oct2024.pdf",
-            date: "19 Jun 2026",
-            time: "4:20 PM",
-            score: 78,
-            overallScore: 78,
-            atsScore: 72,
-            strengths: [
-                "Relevant leadership history",
-            ],
-            weaknesses: [
-                "Lacks structural consistency",
-            ],
-            missingSkills: [
-                "Excel",
-                "SQL",
-            ],
-            improvements: [
-                "Align margins and fonts",
-            ],
-            recommendedRoles: [
-                "Business Analyst",
-                "Project Lead",
-            ],
-        }
-    ];
+    // Fetch user analyses from the API on mount
+    useEffect(() => {
+        const fetchScans = async () => {
+            try {
+                const response = await axios.get("/resume/analyses");
+                if (response.data.success && response.data.data) {
+                    const mappedScans: Scan[] = response.data.data.map((resume: BackendResume) => {
+                        const dateObj = new Date(resume.createdAt);
+                        const date = dateObj.toLocaleDateString("en-US", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric"
+                        });
+                        const time = dateObj.toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true
+                        });
+                        const analysis = resume.analysis || {};
+                        const score = analysis.overallScore || 0;
+                        return {
+                            id: resume._id,
+                            filename: resume.fileName || "Resume File",
+                            date,
+                            time,
+                            score,
+                            overallScore: analysis.overallScore || 0,
+                            atsScore: analysis.atsScore || 0,
+                            strengths: analysis.strengths || [],
+                            weaknesses: analysis.weaknesses || [],
+                            missingSkills: analysis.missingSkills || [],
+                            improvements: analysis.improvements || [],
+                            recommendedRoles: analysis.recommendedRoles || [],
+                        };
+                    });
+                    setScans(mappedScans);
+                }
+            } catch (error) {
+                console.error("Error fetching scans:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchScans();
+    }, []);
 
     // Navigation Handlers
     const handleCloseModal = (): void => {
@@ -137,8 +115,10 @@ export default function Dashboard() {
         } catch (error) {
             console.error("Logout API error:", error);
         } finally {
-            logoutStore();
-            navigate("/");
+            navigate("/", { replace: true });
+            setTimeout(() => {
+                logoutStore();
+            }, 200);
         }
     };
 
@@ -147,15 +127,15 @@ export default function Dashboard() {
     };
 
     // Statistics calculations
-    const totalScans = 24;
-    const bestScore = Math.max(...scans.map(s => s.score));
+    const totalScans = scans.length;
+    const bestScore = scans.length > 0 ? Math.max(...scans.map(s => s.score)) : 0;
+
 
     return (
         <div className="bg-surface text-on-surface min-h-screen font-body-md flex flex-col">
             {/* Top Navbar */}
             <Navbar
                 onMenuClick={() => setIsMobileSidebarOpen(true)}
-                onLogout={handleLogout}
             />
 
             {/* Sidebar (handles desktop and mobile layout internally) */}
@@ -174,7 +154,12 @@ export default function Dashboard() {
                 <div className="px-6 md:px-10 py-8 max-w-5xl w-full mx-auto flex-grow flex flex-col">
 
                     {/* View Switching */}
-                    {activeView === "dashboard" ? (
+                    {isLoading ? (
+                        <div className="flex-grow flex flex-col items-center justify-center py-20 text-slate-500 font-semibold gap-3">
+                            <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                            <span>Loading dashboard data...</span>
+                        </div>
+                    ) : activeView === "dashboard" ? (
                         <DashboardOverview
                             scans={scans}
                             totalScans={totalScans}
