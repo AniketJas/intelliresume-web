@@ -49,7 +49,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4 text-label-sm text-on-surface-variant">
-          <p>© 2026 IntelliResume. Precision-engineered for elite recruiters.</p>
+          <p>© {new Date().getFullYear()} IntelliResume. Precision-engineered for elite recruiters.</p>
           <p>
             Made by <span className="font-bold text-on-surface">Aniket Jas</span>
           </p>
