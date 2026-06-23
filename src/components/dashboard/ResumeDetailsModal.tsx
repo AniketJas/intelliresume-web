@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { X, Download, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Briefcase } from "lucide-react";
 
 interface Scan {
-    id: number;
+    id: string;
     filename: string;
     date: string;
     time: string;

@@ -1,7 +1,7 @@
 import { FileText, Eye, ChartColumn, Star } from "lucide-react";
 
 interface Scan {
-    id: number;
+    id: string;
     filename: string;
     date: string;
     time: string;
@@ -122,36 +122,42 @@ export default function DashboardOverview({
                     </button>
                 </div>
                 <div className="divide-y divide-slate-100">
-                    {scans.slice(0, 3).map((scan) => (
-                        <div
-                            key={scan.id}
-                            className="px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-slate-50 group-hover:bg-indigo-50 border border-slate-100/80 flex items-center justify-center text-primary group-hover:scale-105 transition-all">
-                                    <FileText className="w-6 h-6" />
+                    {scans.length > 0 ? (
+                        scans.slice(0, 3).map((scan) => (
+                            <div
+                                key={scan.id}
+                                className="px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-slate-50 group-hover:bg-indigo-50 border border-slate-100/80 flex items-center justify-center text-primary group-hover:scale-105 transition-all">
+                                        <FileText className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-slate-800 text-sm group-hover:text-primary transition-colors">
+                                            {scan.filename}
+                                        </h4>
+                                        <p className="text-xs text-slate-400 mt-0.5">{scan.date} • {scan.time}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="font-semibold text-slate-800 text-sm group-hover:text-primary transition-colors">
-                                        {scan.filename}
-                                    </h4>
-                                    <p className="text-xs text-slate-400 mt-0.5">{scan.date} • {scan.time}</p>
+                                <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getScoreBadgeClass(scan.score)}`}>
+                                        {scan.score} {getScoreText(scan.score)}
+                                    </span>
+                                    <button
+                                        onClick={() => onViewDetails(scan)}
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                        View Details
+                                    </button>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getScoreBadgeClass(scan.score)}`}>
-                                    {scan.score} {getScoreText(scan.score)}
-                                </span>
-                                <button
-                                    onClick={() => onViewDetails(scan)}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                    View Details
-                                </button>
-                            </div>
+                        ))
+                    ) : (
+                        <div className="px-6 py-12 text-center text-slate-400 font-semibold text-sm">
+                            No recent scans found. Analyze your resume to get started!
                         </div>
-                    ))}
+                    )}
                 </div>
             </section>
         </div>
