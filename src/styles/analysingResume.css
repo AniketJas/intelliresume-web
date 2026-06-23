@@ -1,0 +1,101 @@
+/* Scanning Line Keyframes */
+@keyframes scan {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+.scan-line {
+    animation: scan 3s ease-in-out infinite;
+    background: linear-gradient(180deg, transparent 0%, var(--color-primary, #3525cd) 50%, transparent 100%);
+}
+
+/* Floating Keyframes */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+.float-animation {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Status Fade Transitions */
+@keyframes fadeInOut {
+    0%, 100% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    15%, 85% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.status-fade-in {
+    animation: fadeInOut 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Progress Underline Keyframes */
+@keyframes progress-width {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+.check-step-active {
+    position: relative;
+}
+
+.check-step-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 2px;
+    width: 100%;
+    background: #3525cd;
+    animation: progress-width 2s ease-in-out infinite;
+}
+
+/* Orbital Animations */
+@keyframes spinOrbital {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinOrbitalReverse {
+    from {
+        transform: rotate(360deg);
+    }
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+.orbital-spin {
+    animation: spinOrbital 10s linear infinite;
+}
+
+.orbital-spin-reverse {
+    animation: spinOrbitalReverse 15s linear infinite;
+}

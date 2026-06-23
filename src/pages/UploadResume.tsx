@@ -10,63 +10,76 @@ import {
     Star,
     Brain,
     TrendingUp,
-    ArrowLeft
+    ArrowLeft,
+    Loader2,
+    CheckCircle2
 } from "lucide-react";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/uploadResume.css";
-import { useUserStore } from "../store";
 
 export default function UploadResume() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const isUploading = false;
+    const [uploadError, setUploadError] = useState<string>(location.state?.error || "");
+    const [uploadSuccess, setUploadSuccess] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const navigate = useNavigate();
-
-    const logoutStore = useUserStore((state) => state.logout);
-
-    // Empty placeholder handlers requested
     const handleAnalyseResume = (): void => {
-        // Keep empty
+        if (!selectedFile) return;
+        navigate("/analysing", { state: { file: selectedFile } });
     };
 
     const handleBackToDashboard = (): void => {
         navigate("/dashboard");
     };
 
-    const handleLogout = async (): Promise<void> => {
-        try {
-            await axios.post("/users/logout");
-        } catch (error) {
-            console.error("Logout API error:", error);
-        } finally {
-            logoutStore();
-            navigate("/");
-        }
-    };
-
     // UI State Interaction Handlers
     const handleBrowseFiles = (): void => {
+        if (isUploading) return;
         fileInputRef.current?.click();
     };
 
     const handleChooseDifferentFile = (): void => {
+        if (isUploading) return;
         fileInputRef.current?.click();
     };
 
     const handleRemoveFile = (): void => {
+        if (isUploading) return;
         setSelectedFile(null);
+        setUploadError("");
+        setUploadSuccess(false);
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
     };
 
+    const isValidFileType = (file: File): boolean => {
+        const validTypes = [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword"
+        ];
+        const extension = file.name.split(".").pop()?.toLowerCase();
+        const validExtensions = ["pdf", "doc", "docx"];
+        return validTypes.includes(file.type) || (extension !== undefined && validExtensions.includes(extension));
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isUploading) return;
         if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
+            const file = e.target.files[0];
+            if (isValidFileType(file)) {
+                setSelectedFile(file);
+                setUploadError("");
+                setUploadSuccess(false);
+            }
         }
     };
 
@@ -82,17 +95,13 @@ export default function UploadResume() {
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsDragging(false);
+        if (isUploading) return;
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             const file = e.dataTransfer.files[0];
-            const validTypes = [
-                "application/pdf",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/msword",
-                "text/rtf",
-                "application/rtf"
-            ];
-            if (validTypes.includes(file.type) || file.name.endsWith(".pdf") || file.name.endsWith(".docx") || file.name.endsWith(".doc") || file.name.endsWith(".rtf")) {
+            if (isValidFileType(file)) {
                 setSelectedFile(file);
+                setUploadError("");
+                setUploadSuccess(false);
             }
         }
     };
@@ -111,7 +120,6 @@ export default function UploadResume() {
             {/* Top Navbar */}
             <Navbar
                 onMenuClick={() => { }}
-                onLogout={handleLogout}
             />
 
             {/* Main Content Page container */}
@@ -151,15 +159,15 @@ export default function UploadResume() {
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                             className={`bg-white border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center min-h-[420px] ambient-shadow transition-all duration-300 relative overflow-hidden group ${isDragging
-                                    ? "border-primary bg-indigo-50/20 scale-[0.99]"
-                                    : "border-slate-200 hover:border-primary-container"
+                                ? "border-primary bg-indigo-50/20 scale-[0.99]"
+                                : "border-slate-200 hover:border-primary-container"
                                 }`}
                         >
                             <input
                                 type="file"
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
-                                accept=".pdf,.docx,.doc,.rtf"
+                                accept=".pdf,.docx,.doc"
                                 className="hidden"
                                 aria-label="Choose file input"
                             />
@@ -174,7 +182,7 @@ export default function UploadResume() {
                                         {isDragging ? "Drop your file here" : "Drag and drop your resume"}
                                     </h3>
                                     <p className="text-xs text-slate-400 font-semibold mb-6">
-                                        PDF, DOCX, or RTF (Max 10MB)
+                                        PDF, DOCX, or DOC (Max 10MB)
                                     </p>
                                     <button
                                         onClick={handleBrowseFiles}
@@ -201,7 +209,8 @@ export default function UploadResume() {
                                         </div>
                                         <button
                                             onClick={handleRemoveFile}
-                                            className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border-none flex items-center justify-center"
+                                            disabled={isUploading}
+                                            className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="Remove file"
                                             aria-label="Remove file"
                                         >
@@ -212,18 +221,44 @@ export default function UploadResume() {
                                     <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full">
                                         <button
                                             onClick={handleAnalyseResume}
-                                            className="flex-grow bg-primary text-white font-bold text-sm px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-opacity-95 active:scale-95 transition-all cursor-pointer shadow-lg shadow-primary/15"
+                                            disabled={isUploading}
+                                            className="flex-grow bg-primary text-white font-bold text-sm px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-opacity-95 active:scale-95 transition-all cursor-pointer shadow-lg shadow-primary/15 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <ChartColumn className="w-4 h-4" />
-                                            Analyze Resume
+                                            {isUploading ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <ChartColumn className="w-4 h-4" />
+                                            )}
+                                            {isUploading ? "Extracting..." : "Analyze Resume"}
                                         </button>
                                         <button
                                             onClick={handleChooseDifferentFile}
-                                            className="bg-white text-slate-700 border border-slate-200 font-bold text-sm px-6 py-3.5 rounded-2xl hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
+                                            disabled={isUploading}
+                                            className="bg-white text-slate-700 border border-slate-200 font-bold text-sm px-6 py-3.5 rounded-2xl hover:bg-slate-50 transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Choose Different File
                                         </button>
                                     </div>
+
+                                    {/* Success Message */}
+                                    {uploadSuccess && (
+                                        <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-700 animate-fade-in">
+                                            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                                            <p className="text-xs font-semibold">
+                                                Resume text extracted successfully! Logged to the console.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Error Message */}
+                                    {uploadError && (
+                                        <div className="mt-4 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 text-rose-700 animate-fade-in">
+                                            <Info className="w-5 h-5 flex-shrink-0 animate-pulse" />
+                                            <p className="text-xs font-semibold">
+                                                {uploadError}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
