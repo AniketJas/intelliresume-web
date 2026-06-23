@@ -150,7 +150,7 @@ export default function NotFound() {
 
             <footer className="w-full py-8 px-margin-desktop border-t border-outline-variant/10 z-10">
                 <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-on-surface-variant font-body-sm text-body-sm">
-                    <p>© 2026 IntelliResume AI. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} IntelliResume AI. All rights reserved.</p>
                 </div>
             </footer>
         </div>

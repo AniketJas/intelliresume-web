@@ -239,7 +239,7 @@ export default function WorkInProgress() {
                     style={{ animationDelay: "0.6s" }}
                 >
                     <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 md:mb-0">
-                        © 2026 IntelliResume AI. All rights reserved.
+                        © {new Date().getFullYear()} IntelliResume AI. All rights reserved.
                     </p>
                 </footer>
             </div>
