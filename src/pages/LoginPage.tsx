@@ -61,6 +61,12 @@ export default function LoginPage() {
             const response = await axios.post("/users/login", { email, password });
             if (response.data.success || response.data.success === 1) {
                 const userData = response.data.data;
+                
+                // Add JWT token to localStorage for authentication state synchronization
+                if (response.data.token) {
+                    localStorage.setItem("token", response.data.token);
+                }
+
                 loginStore({
                     id: userData.id || userData._id || "user-id",
                     name: userData.name || "",

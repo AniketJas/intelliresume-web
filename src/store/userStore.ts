@@ -22,7 +22,10 @@ export const useUserStore = create<UserStore>()(
         user: null,
         isAuthenticated: false,
         login: (user) => set({ user, isAuthenticated: true }),
-        logout: () => set({ user: null, isAuthenticated: false }),
+        logout: () => {
+          localStorage.removeItem("token");
+          set({ user: null, isAuthenticated: false });
+        },
         updateUser: (updatedFields) =>
           set((state) => ({
             user: state.user ? { ...state.user, ...updatedFields } : null,
