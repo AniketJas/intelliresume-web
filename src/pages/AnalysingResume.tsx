@@ -41,10 +41,12 @@ export default function AnalysingResume(): React.JSX.Element {
     // If not analyzing currently, evaluate if we have results or errors, otherwise fallback
     if (!isAnalyzing) {
       if (analysisResult) {
+        const resumeId = useAnalysisStore.getState().resumeId;
         navigate("/result", {
           state: {
             analysis: analysisResult,
-            fileName: fileName
+            fileName: fileName,
+            resumeId: resumeId
           }
         });
       } else if (analysisError) {

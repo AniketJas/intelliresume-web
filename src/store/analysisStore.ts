@@ -6,6 +6,7 @@ export interface AnalysisStore {
   analysisError: string | null;
   isAnalyzing: boolean;
   fileName: string;
+  resumeId: string | null;
   abortController: AbortController | null;
   startAnalysis: (file: File) => Promise<void>;
   resetAnalysis: () => void;
@@ -17,6 +18,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   analysisError: null,
   isAnalyzing: false,
   fileName: "",
+  resumeId: null,
   abortController: null,
   startAnalysis: async (file: File) => {
     // If already analyzing, do not start again
@@ -29,6 +31,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       analysisError: null,
       isAnalyzing: true,
       fileName: file.name,
+      resumeId: null,
       abortController: controller
     });
 
@@ -47,6 +50,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       console.log("Extraction and Analysis Result:", response.data);
       set({
         analysisResult: response.data?.data?.analysis,
+        resumeId: response.data?.data?.resumeId,
         isAnalyzing: false,
         abortController: null
       });
@@ -70,6 +74,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
     analysisError: null,
     isAnalyzing: false,
     fileName: "",
+    resumeId: null,
     abortController: null
   }),
   abortAnalysis: () => {
