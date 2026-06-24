@@ -19,11 +19,12 @@ interface Scan {
     score: number;
     overallScore: number;
     atsScore: number;
-    strengths: string[];
-    weaknesses: string[];
+    strengths: any[];
+    weaknesses: any[];
     missingSkills: string[];
-    improvements: string[];
-    recommendedRoles: string[];
+    improvements: any[];
+    recommendedRoles: any[];
+    recruiterSummary?: string;
 }
 
 interface BackendResume {
@@ -33,11 +34,12 @@ interface BackendResume {
     analysis?: {
         overallScore?: number;
         atsScore?: number;
-        strengths?: string[];
-        weaknesses?: string[];
+        strengths?: any[];
+        weaknesses?: any[];
         missingSkills?: string[];
-        improvements?: string[];
-        recommendedRoles?: string[];
+        improvements?: any[];
+        recommendedRoles?: any[];
+        recruiterSummary?: string;
     };
 }
 
@@ -105,6 +107,7 @@ export default function Dashboard() {
                             missingSkills: analysis.missingSkills || [],
                             improvements: analysis.improvements || [],
                             recommendedRoles: analysis.recommendedRoles || [],
+                            recruiterSummary: analysis.recruiterSummary || "",
                         };
                     });
                     setScans(mappedScans);

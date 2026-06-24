@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { X, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Briefcase } from "lucide-react";
+import { X, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Briefcase, Brain } from "lucide-react";
 
 interface Scan {
     id: string;
@@ -9,11 +9,12 @@ interface Scan {
     score: number;
     overallScore: number;
     atsScore: number;
-    strengths: string[];
-    weaknesses: string[];
+    strengths: any[];
+    weaknesses: any[];
     missingSkills: string[];
-    improvements: string[];
-    recommendedRoles: string[];
+    improvements: any[];
+    recommendedRoles: any[];
+    recruiterSummary?: string;
 }
 
 interface ResumeDetailsModalProps {
@@ -106,6 +107,19 @@ export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModal
                         </div>
                     </div>
 
+                    {/* AI Analysis / Recruiter Summary */}
+                    {scan.recruiterSummary && (
+                        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+                            <div className="flex items-center gap-2 text-indigo-600 pb-2 border-b border-slate-100">
+                                <Brain className="w-5 h-5" />
+                                <h3 className="font-bold text-sm tracking-wide uppercase">IntelliResume AI Analysis</h3>
+                            </div>
+                            <p className="text-sm text-slate-650 leading-relaxed font-medium">
+                                {scan.recruiterSummary}
+                            </p>
+                        </div>
+                    )}
+
                     {/* Details Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Strengths Card */}
@@ -116,12 +130,17 @@ export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModal
                             </div>
                             <ul className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 {scan.strengths.length > 0 ? (
-                                    scan.strengths.map((str, idx) => (
-                                        <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
-                                            <span className="text-emerald-500 mt-1">•</span>
-                                            <span>{str}</span>
-                                        </li>
-                                    ))
+                                    scan.strengths.map((str: any, idx) => {
+                                        const text = typeof str === "string"
+                                            ? str
+                                            : `${str.title || ""}${str.explanation || str.description ? `: ${str.explanation || str.description}` : ""}`;
+                                        return (
+                                            <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
+                                                <span className="text-emerald-500 mt-1">•</span>
+                                                <span>{text}</span>
+                                            </li>
+                                        );
+                                    })
                                 ) : (
                                     <p className="text-xs text-slate-400 italic">No key strengths detected.</p>
                                 )}
@@ -136,12 +155,17 @@ export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModal
                             </div>
                             <ul className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 {scan.weaknesses.length > 0 ? (
-                                    scan.weaknesses.map((weak, idx) => (
-                                        <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
-                                            <span className="text-rose-500 mt-1">•</span>
-                                            <span>{weak}</span>
-                                        </li>
-                                    ))
+                                    scan.weaknesses.map((weak: any, idx) => {
+                                        const text = typeof weak === "string"
+                                            ? weak
+                                            : `${weak.issue || weak.title || ""}${weak.reason || weak.description ? `: ${weak.reason || weak.description}` : ""}`;
+                                        return (
+                                            <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
+                                                <span className="text-rose-500 mt-1">•</span>
+                                                <span>{text}</span>
+                                            </li>
+                                        );
+                                    })
                                 ) : (
                                     <p className="text-xs text-slate-400 italic">No major weaknesses detected.</p>
                                 )}
@@ -175,12 +199,17 @@ export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModal
                             </div>
                             <ul className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 {scan.improvements.length > 0 ? (
-                                    scan.improvements.map((imp, idx) => (
-                                        <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
-                                            <span className="text-sky-500 mt-1">•</span>
-                                            <span>{imp}</span>
-                                        </li>
-                                    ))
+                                    scan.improvements.map((imp: any, idx) => {
+                                        const text = typeof imp === "string"
+                                            ? imp
+                                            : `${imp.title || ""}${imp.description || imp.explanation ? `: ${imp.description || imp.explanation}` : ""}`;
+                                        return (
+                                            <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
+                                                <span className="text-sky-500 mt-1">•</span>
+                                                <span>{text}</span>
+                                            </li>
+                                        );
+                                    })
                                 ) : (
                                     <p className="text-xs text-slate-400 italic">No recommendations needed.</p>
                                 )}
@@ -195,11 +224,16 @@ export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModal
                             </div>
                             <div className="flex flex-wrap gap-2.5">
                                 {scan.recommendedRoles.length > 0 ? (
-                                    scan.recommendedRoles.map((role, idx) => (
-                                        <span key={idx} className="px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-xl text-xs font-bold">
-                                            {role}
-                                        </span>
-                                    ))
+                                    scan.recommendedRoles.map((role: any, idx) => {
+                                        const text = typeof role === "string"
+                                            ? role
+                                            : `${role.role || ""}${role.fitReason ? ` (${role.fitReason})` : ""}`;
+                                        return (
+                                            <span key={idx} className="px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-xl text-xs font-bold">
+                                                {text}
+                                            </span>
+                                        );
+                                    })
                                 ) : (
                                     <p className="text-xs text-slate-400 italic">No role recommendations found.</p>
                                 )}

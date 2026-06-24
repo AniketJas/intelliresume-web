@@ -8,11 +8,12 @@ interface Scan {
     score: number;
     overallScore: number;
     atsScore: number;
-    strengths: string[];
-    weaknesses: string[];
+    strengths: any[];
+    weaknesses: any[];
     missingSkills: string[];
-    improvements: string[];
-    recommendedRoles: string[];
+    improvements: any[];
+    recommendedRoles: any[];
+    recruiterSummary?: string;
 }
 
 interface ScanHistoryProps {

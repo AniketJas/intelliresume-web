@@ -124,13 +124,13 @@ export default function FinalResult(): React.JSX.Element {
 
   const parsedAnalysis: AnalysisResult = rawAnalysis
     ? {
-        overallScore: rawAnalysis.overallScore || 0,
-        atsScore: rawAnalysis.atsScore || 0,
-        strengths: parseList(rawAnalysis.strengths || []),
-        improvements: parseList(rawAnalysis.improvements || rawAnalysis.weaknesses || []),
-        missingSkills: rawAnalysis.missingSkills || [],
-        recommendedRoles: parseRecommendedRoles(rawAnalysis.recommendedRoles || [])
-      }
+      overallScore: rawAnalysis.overallScore || 0,
+      atsScore: rawAnalysis.atsScore || 0,
+      strengths: parseList(rawAnalysis.strengths || []),
+      improvements: parseList(rawAnalysis.improvements || rawAnalysis.weaknesses || []),
+      missingSkills: rawAnalysis.missingSkills || [],
+      recommendedRoles: parseRecommendedRoles(rawAnalysis.recommendedRoles || [])
+    }
     : mockAnalysisResult;
 
   const recruiterSummary =
@@ -213,7 +213,7 @@ export default function FinalResult(): React.JSX.Element {
   if (error) {
     return (
       <div className="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col">
-        <Navbar onMenuClick={() => {}} />
+        <Navbar onMenuClick={() => { }} />
         <main className="flex-grow pt-32 pb-24 px-6 md:px-10 max-w-3xl mx-auto w-full flex flex-col items-center justify-center text-center">
           <div className="w-20 h-20 bg-rose-50 dark:bg-rose-950/20 text-rose-500 rounded-3xl flex items-center justify-center mb-8 border border-rose-100 dark:border-rose-900/30 shadow-lg shadow-rose-500/5 animate-bounce">
             <AlertTriangle className="w-10 h-10" />
@@ -249,17 +249,17 @@ export default function FinalResult(): React.JSX.Element {
     <div className="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col print:bg-white print:text-black">
       {/* Navbar component */}
       <div className="print:hidden">
-        <Navbar onMenuClick={() => {}} />
+        <Navbar onMenuClick={() => { }} />
       </div>
 
       {/* Main Content Area */}
       <main className="flex-grow pt-32 pb-24 px-6 md:px-10 max-w-7xl mx-auto w-full print:pt-4 print:pb-4">
-        
+
         {/* Breadcrumb & Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 fade-in-card">
           <div>
             <nav className="flex items-center gap-2 mb-2 print:hidden" aria-label="Breadcrumb">
-              <button 
+              <button
                 onClick={handleBackToDashboard}
                 className="font-label-sm text-xs font-semibold text-slate-500 hover:text-primary transition-colors bg-transparent border-none cursor-pointer p-0"
               >
@@ -277,7 +277,7 @@ export default function FinalResult(): React.JSX.Element {
               Generated on {formattedDate} for "{fileName}"
             </p>
           </div>
-          
+
           <div className="flex gap-4 w-full md:w-auto">
             <button
               type="button"
@@ -291,20 +291,20 @@ export default function FinalResult(): React.JSX.Element {
 
         {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
+
           {/* Main Scores Card */}
           <div className="lg:col-span-8 bg-white border border-slate-200/60 rounded-3xl p-8 ambient-shadow fade-in-card delay-100">
             <div className="flex flex-col md:flex-row items-center gap-10">
-              
+
               {/* Circular Score */}
               <div className="relative w-48 h-48 flex items-center justify-center flex-shrink-0">
                 <div
-                  className="circular-progress w-full h-full rounded-full flex items-center justify-center rotate-[-90deg]"
+                  className="circular-progress w-full h-full rounded-full flex items-center justify-center"
                   style={{
                     background: `conic-gradient(from 0deg, #3525cd 0% ${animatedScore}%, #eaedff ${animatedScore}% 100%)`
                   }}
                 >
-                  <div className="w-40 h-40 bg-white rounded-full flex flex-col items-center justify-center rotate-[90deg]">
+                  <div className="w-40 h-40 bg-white rounded-full flex flex-col items-center justify-center">
                     <span className="text-5xl font-black text-primary leading-none">
                       {animatedScore}
                     </span>
@@ -329,7 +329,7 @@ export default function FinalResult(): React.JSX.Element {
                     </span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-cyan-500 rounded-full transition-all duration-300"
                       style={{ width: `${animatedAtsScore}%` }}
                     ></div>
@@ -371,7 +371,7 @@ export default function FinalResult(): React.JSX.Element {
 
           {/* Detailed Analysis Sections */}
           <div id="detailed-analysis-section" className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-mt-24">
-            
+
             {/* Strengths */}
             <div className="bg-white border border-slate-200/60 rounded-3xl p-8 ambient-shadow-hover fade-in-card delay-300">
               <div className="flex items-center gap-3 mb-6">
