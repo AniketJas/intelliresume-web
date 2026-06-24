@@ -49,6 +49,11 @@ export default function Dashboard() {
     const [scans, setScans] = useState<Scan[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [bestScore, setBestScore] = useState(0);
+
     const storeUser = useUserStore((state) => state.user);
     const logoutStore = useUserStore((state) => state.logout);
 
@@ -58,13 +63,22 @@ export default function Dashboard() {
         email: "aniket@example.com",
     };
 
-    // Fetch user analyses from the API on mount
+    const handleSetView = (view: "dashboard" | "history") => {
+        setActiveView(view);
+        setCurrentPage(1);
+    };
+
+    // Fetch user analyses from the API on mount or page/view change
     useEffect(() => {
         const fetchScans = async () => {
+            setIsLoading(true);
             try {
-                const response = await axios.get("/resume/analyses");
+                // If on dashboard view, we always want the newest ones (page 1)
+                const fetchPage = activeView === "dashboard" ? 1 : currentPage;
+                const response = await axios.get(`/resume/analyses?page=${fetchPage}&limit=10`);
                 if (response.data.success && response.data.data) {
-                    const mappedScans: Scan[] = response.data.data.map((resume: BackendResume) => {
+                    const { resumes, pagination, bestScore: backendBestScore } = response.data.data;
+                    const mappedScans: Scan[] = resumes.map((resume: BackendResume) => {
                         const dateObj = new Date(resume.createdAt);
                         const date = dateObj.toLocaleDateString("en-US", {
                             day: "numeric",
@@ -94,6 +108,12 @@ export default function Dashboard() {
                         };
                     });
                     setScans(mappedScans);
+                    setBestScore(backendBestScore || 0);
+                    if (pagination) {
+                        setCurrentPage(pagination.currentPage);
+                        setTotalPages(pagination.totalPages);
+                        setTotalRecords(pagination.totalRecords);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching scans:", error);
@@ -102,7 +122,7 @@ export default function Dashboard() {
             }
         };
         fetchScans();
-    }, []);
+    }, [currentPage, activeView]);
 
     // Navigation Handlers
     const handleCloseModal = (): void => {
@@ -127,8 +147,7 @@ export default function Dashboard() {
     };
 
     // Statistics calculations
-    const totalScans = scans.length;
-    const bestScore = scans.length > 0 ? Math.max(...scans.map(s => s.score)) : 0;
+    const totalScans = totalRecords;
 
 
     return (
@@ -141,7 +160,7 @@ export default function Dashboard() {
             {/* Sidebar (handles desktop and mobile layout internally) */}
             <Sidebar
                 activeView={activeView}
-                setActiveView={setActiveView}
+                setActiveView={handleSetView}
                 isOpen={isMobileSidebarOpen}
                 onClose={() => setIsMobileSidebarOpen(false)}
                 onAnalyseNew={handleAnalyseNewResume}
@@ -165,12 +184,16 @@ export default function Dashboard() {
                             totalScans={totalScans}
                             bestScore={bestScore}
                             onViewDetails={(scan) => setSelectedScan(scan)}
-                            onViewAll={() => setActiveView("history")}
+                            onViewAll={() => handleSetView("history")}
                         />
                     ) : (
                         <ScanHistory
                             scans={scans}
                             onViewDetails={(scan) => setSelectedScan(scan)}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalRecords={totalRecords}
+                            onPageChange={(page) => setCurrentPage(page)}
                         />
                     )}
 
