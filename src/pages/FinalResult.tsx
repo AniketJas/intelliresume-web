@@ -9,11 +9,13 @@ import {
   List,
   Sparkles,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
+import { useAnalysisStore } from "../store";
 import "../styles/finalResult.css";
 
 interface Strength {
@@ -76,8 +78,8 @@ const mockAnalysisResult: AnalysisResult = {
 export default function FinalResult(): React.JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
-  const rawAnalysis = location.state?.analysis;
-  const fileName = location.state?.fileName || "Senior_Product_Designer_V3.pdf";
+  const rawAnalysis = location.state?.analysis || useAnalysisStore.getState().analysisResult;
+  const fileName = location.state?.fileName || useAnalysisStore.getState().fileName || "Senior_Product_Designer_V3.pdf";
 
   const parseList = (items: unknown[]): Strength[] => {
     if (!items) return [];
@@ -210,6 +212,43 @@ export default function FinalResult(): React.JSX.Element {
     day: "numeric",
     year: "numeric"
   });
+
+  const error = location.state?.error;
+
+  if (error) {
+    return (
+      <div className="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col">
+        <Navbar onMenuClick={() => {}} />
+        <main className="flex-grow pt-32 pb-24 px-6 md:px-10 max-w-3xl mx-auto w-full flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 bg-rose-50 dark:bg-rose-950/20 text-rose-500 rounded-3xl flex items-center justify-center mb-8 border border-rose-100 dark:border-rose-900/30 shadow-lg shadow-rose-500/5 animate-bounce">
+            <AlertTriangle className="w-10 h-10" />
+          </div>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-3">
+            Analysis Failed
+          </h1>
+          <p className="text-base text-slate-650 max-w-lg mb-8 leading-relaxed font-medium">
+            Sorry, unable to analyze your resume, please try again after some time.
+          </p>
+
+          <div className="flex gap-4 w-full justify-center">
+            <button
+              onClick={handleBackToDashboard}
+              className="px-6 py-3 bg-white border border-slate-200/60 text-slate-600 font-bold text-sm rounded-2xl hover:bg-slate-50 transition-all active:scale-95 duration-200 cursor-pointer"
+            >
+              Back to Dashboard
+            </button>
+            <button
+              onClick={handleAnalyzeAnotherResume}
+              className="px-6 py-3 bg-indigo-600 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all active:scale-95 duration-200 cursor-pointer shadow-lg shadow-indigo-600/20"
+            >
+              Try Uploading Again
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col print:bg-white print:text-black">
