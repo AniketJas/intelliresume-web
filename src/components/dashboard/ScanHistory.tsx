@@ -1,4 +1,6 @@
-import { FileText, Eye } from "lucide-react";
+import { useState } from "react";
+import { FileText, Eye, Download, Loader2 } from "lucide-react";
+import axios from "axios";
 
 interface Scan {
     id: string;
@@ -18,19 +20,106 @@ interface Scan {
 interface ScanHistoryProps {
     scans: Scan[];
     onViewDetails: (scan: Scan) => void;
+    currentPage: number;
+    totalPages: number;
+    totalRecords: number;
+    onPageChange: (page: number) => void;
 }
 
-export default function ScanHistory({ scans, onViewDetails }: ScanHistoryProps) {
-    const getScoreBadgeClass = (score: number) => {
+// Sub-component to render the score badge
+function ScoreBadge({ score }: { score: number }) {
+    const getBadgeStyle = (score: number) => {
         if (score >= 90) return "bg-green-100 text-green-700 border-green-200";
         if (score >= 80) return "bg-indigo-50 text-primary border-indigo-100";
         return "bg-slate-100 text-slate-700 border-slate-200";
     };
 
-    const getScoreText = (score: number) => {
+    const getScoreLabel = (score: number) => {
         if (score >= 90) return "Excellent";
         if (score >= 80) return "Strong";
         return "Average";
+    };
+
+    return (
+        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getBadgeStyle(score)}`}>
+            {score} {getScoreLabel(score)}
+        </span>
+    );
+}
+
+// Sub-component for download and view actions
+interface ActionButtonsProps {
+    scan: Scan;
+    isDownloading: boolean;
+    onDownload: (id: string, filename: string) => void;
+    onViewDetails: (scan: Scan) => void;
+}
+
+function ActionButtons({ scan, isDownloading, onDownload, onViewDetails }: ActionButtonsProps) {
+    return (
+        <div className="flex items-center gap-2">
+            <button
+                onClick={() => onDownload(scan.id, scan.filename)}
+                disabled={isDownloading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Download Original Resume"
+            >
+                {isDownloading ? (
+                    <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Downloading...
+                    </>
+                ) : (
+                    <>
+                        <Download className="w-4 h-4" />
+                        Download
+                    </>
+                )}
+            </button>
+            <button
+                onClick={() => onViewDetails(scan)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
+            >
+                <Eye className="w-4 h-4" />
+            </button>
+        </div>
+    );
+}
+
+export default function ScanHistory({
+    scans,
+    onViewDetails,
+    currentPage,
+    totalPages,
+    totalRecords,
+    onPageChange
+}: ScanHistoryProps) {
+    const [downloadingIds, setDownloadingIds] = useState<Record<string, boolean>>({});
+
+    const handleDownload = async (id: string, filename: string) => {
+        if (downloadingIds[id]) return;
+        setDownloadingIds(prev => ({ ...prev, [id]: true }));
+        try {
+            const response = await axios.get(`/resume/download/${id}`, {
+                responseType: "blob",
+            });
+            const contentType = response.headers["content-type"] || "application/octet-stream";
+            const blob = new Blob([response.data], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error downloading file:", error);
+            alert("Failed to download the resume file.");
+        } finally {
+            setDownloadingIds(prev => ({ ...prev, [id]: false }));
+        }
     };
 
     return (
@@ -68,18 +157,15 @@ export default function ScanHistory({ scans, onViewDetails }: ScanHistoryProps) 
                                             {scan.date} at {scan.time}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getScoreBadgeClass(scan.score)}`}>
-                                                {scan.score} {getScoreText(scan.score)}
-                                            </span>
+                                            <ScoreBadge score={scan.score} />
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => onViewDetails(scan)}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                                View Details
-                                            </button>
+                                        <td className="px-6 py-4 text-right flex justify-end">
+                                            <ActionButtons
+                                                scan={scan}
+                                                isDownloading={!!downloadingIds[scan.id]}
+                                                onDownload={handleDownload}
+                                                onViewDetails={onViewDetails}
+                                            />
                                         </td>
                                     </tr>
                                 ))
@@ -107,16 +193,13 @@ export default function ScanHistory({ scans, onViewDetails }: ScanHistoryProps) 
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getScoreBadgeClass(scan.score)}`}>
-                                        {scan.score} {getScoreText(scan.score)}
-                                    </span>
-                                    <button
-                                        onClick={() => onViewDetails(scan)}
-                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                        View Details
-                                    </button>
+                                    <ScoreBadge score={scan.score} />
+                                    <ActionButtons
+                                        scan={scan}
+                                        isDownloading={!!downloadingIds[scan.id]}
+                                        onDownload={handleDownload}
+                                        onViewDetails={onViewDetails}
+                                    />
                                 </div>
                             </div>
                         ))
@@ -127,6 +210,34 @@ export default function ScanHistory({ scans, onViewDetails }: ScanHistoryProps) 
                     )}
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalRecords > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-slate-200/60">
+                    <span className="text-xs font-semibold text-slate-500">
+                        Showing {((currentPage - 1) * 10) + 1}-{Math.min(currentPage * 10, totalRecords)} of {totalRecords} resumes
+                    </span>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => onPageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-xs font-semibold text-slate-500">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => onPageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
