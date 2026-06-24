@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Download,
   Brain,
   ThumbsUp,
   CheckCircle2,
@@ -10,14 +9,12 @@ import {
   Sparkles,
   ArrowLeft,
   ChevronRight,
-  AlertTriangle,
-  Loader2
+  AlertTriangle
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import { useAnalysisStore } from "../store";
-import axios from "axios";
 import "../styles/finalResult.css";
 
 interface Strength {
@@ -190,39 +187,8 @@ export default function FinalResult(): React.JSX.Element {
     return () => clearInterval(timer);
   }, [parsedAnalysis.atsScore]);
 
-  const [isDownloading, setIsDownloading] = useState(false);
-  const resumeId = location.state?.resumeId || useAnalysisStore.getState().resumeId;
-
   const handleAnalyzeAnotherResume = (): void => {
     navigate("/upload");
-  };
-
-  const handleDownloadReport = async (): Promise<void> => {
-    if (!resumeId) {
-      window.print();
-      return;
-    }
-    if (isDownloading) return;
-    setIsDownloading(true);
-    try {
-      const response = await axios.get(`/resume/${resumeId}/download-report`, {
-        responseType: "blob",
-      });
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `analysis-report-${resumeId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading report:", error);
-      alert("Failed to download the analysis report.");
-    } finally {
-      setIsDownloading(false);
-    }
   };
 
   const handleViewDetailedInsights = (): void => {
@@ -316,27 +282,9 @@ export default function FinalResult(): React.JSX.Element {
             <button
               type="button"
               onClick={handleAnalyzeAnotherResume}
-              className="flex-1 md:flex-none px-6 py-3 bg-white border border-slate-200/60 text-primary font-bold text-sm rounded-2xl hover:bg-slate-50 transition-all active:scale-95 duration-200"
+              className="flex-1 md:flex-none px-6 py-3 bg-primary text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 ambient-shadow hover:-translate-y-0.5 transition-all active:scale-95 duration-200"
             >
               Analyze Another Resume
-            </button>
-            <button
-              type="button"
-              onClick={handleDownloadReport}
-              disabled={isDownloading}
-              className="flex-1 md:flex-none px-6 py-3 bg-primary text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 ambient-shadow hover:-translate-y-0.5 transition-all active:scale-95 duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isDownloading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Downloading...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5" />
-                  Download Report
-                </>
-              )}
             </button>
           </div>
         </div>

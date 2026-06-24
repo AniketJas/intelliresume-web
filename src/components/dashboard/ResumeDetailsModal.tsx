@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { X, Download, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Briefcase, Loader2 } from "lucide-react";
-import axios from "axios";
+import { useEffect } from "react";
+import { X, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Briefcase } from "lucide-react";
 
 interface Scan {
     id: string;
@@ -23,32 +22,6 @@ interface ResumeDetailsModalProps {
 }
 
 export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModalProps) {
-    const [isDownloading, setIsDownloading] = useState(false);
-
-    const handleDownloadReport = async (): Promise<void> => {
-        if (isDownloading || !scan) return;
-        setIsDownloading(true);
-        try {
-            const response = await axios.get(`/resume/${scan.id}/download-report`, {
-                responseType: "blob",
-            });
-            const blob = new Blob([response.data], { type: "application/pdf" });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `analysis-report-${scan.id}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode?.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error("Error downloading report:", error);
-            alert("Failed to download the analysis report.");
-        } finally {
-            setIsDownloading(false);
-        }
-    };
-
     // Close on ESC key press
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -80,25 +53,6 @@ export default function ResumeDetailsModal({ scan, onClose }: ResumeDetailsModal
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleDownloadReport}
-                            disabled={isDownloading}
-                            className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center gap-1.5 active:scale-95 bg-white font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Download Report"
-                            aria-label="Download Report"
-                        >
-                            {isDownloading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span className="hidden sm:inline">Downloading...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Download className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Download</span>
-                                </>
-                            )}
-                        </button>
                         <button
                             onClick={onClose}
                             className="p-2.5 rounded-xl hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center active:scale-95"

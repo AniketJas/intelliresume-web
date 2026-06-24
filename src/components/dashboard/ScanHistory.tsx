@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { FileText, Eye, Download, Loader2 } from "lucide-react";
-import axios from "axios";
+import { FileText, Eye } from "lucide-react";
 
 interface Scan {
     id: string;
@@ -47,45 +45,6 @@ function ScoreBadge({ score }: { score: number }) {
     );
 }
 
-// Sub-component for download and view actions
-interface ActionButtonsProps {
-    scan: Scan;
-    isDownloading: boolean;
-    onDownload: (id: string, filename: string) => void;
-    onViewDetails: (scan: Scan) => void;
-}
-
-function ActionButtons({ scan, isDownloading, onDownload, onViewDetails }: ActionButtonsProps) {
-    return (
-        <div className="flex items-center gap-2">
-            <button
-                onClick={() => onDownload(scan.id, scan.filename)}
-                disabled={isDownloading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Download Original Resume"
-            >
-                {isDownloading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Downloading...
-                    </>
-                ) : (
-                    <>
-                        <Download className="w-4 h-4" />
-                        Download
-                    </>
-                )}
-            </button>
-            <button
-                onClick={() => onViewDetails(scan)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
-            >
-                <Eye className="w-4 h-4" />
-            </button>
-        </div>
-    );
-}
-
 export default function ScanHistory({
     scans,
     onViewDetails,
@@ -94,34 +53,6 @@ export default function ScanHistory({
     totalRecords,
     onPageChange
 }: ScanHistoryProps) {
-    const [downloadingIds, setDownloadingIds] = useState<Record<string, boolean>>({});
-
-    const handleDownload = async (id: string, filename: string) => {
-        if (downloadingIds[id]) return;
-        setDownloadingIds(prev => ({ ...prev, [id]: true }));
-        try {
-            const response = await axios.get(`/resume/download/${id}`, {
-                responseType: "blob",
-            });
-            const contentType = response.headers["content-type"] || "application/octet-stream";
-            const blob = new Blob([response.data], { type: contentType });
-            const url = window.URL.createObjectURL(blob);
-
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", filename);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode?.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error("Error downloading file:", error);
-            alert("Failed to download the resume file.");
-        } finally {
-            setDownloadingIds(prev => ({ ...prev, [id]: false }));
-        }
-    };
-
     return (
         <div className="space-y-8 flex-grow">
             {/* Header Section */}
@@ -160,12 +91,13 @@ export default function ScanHistory({
                                             <ScoreBadge score={scan.score} />
                                         </td>
                                         <td className="px-6 py-4 text-right flex justify-end">
-                                            <ActionButtons
-                                                scan={scan}
-                                                isDownloading={!!downloadingIds[scan.id]}
-                                                onDownload={handleDownload}
-                                                onViewDetails={onViewDetails}
-                                            />
+                                            <button
+                                                onClick={() => onViewDetails(scan)}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
+                                                title="View Details"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -194,12 +126,13 @@ export default function ScanHistory({
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <ScoreBadge score={scan.score} />
-                                    <ActionButtons
-                                        scan={scan}
-                                        isDownloading={!!downloadingIds[scan.id]}
-                                        onDownload={handleDownload}
-                                        onViewDetails={onViewDetails}
-                                    />
+                                    <button
+                                        onClick={() => onViewDetails(scan)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 transition-all active:scale-95 bg-white font-semibold text-xs cursor-pointer"
+                                        title="View Details"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
                         ))
