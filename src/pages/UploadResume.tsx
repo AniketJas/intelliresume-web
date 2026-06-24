@@ -17,6 +17,7 @@ import {
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAnalysisStore } from "../store";
 import "../styles/uploadResume.css";
 
 export default function UploadResume() {
@@ -25,13 +26,15 @@ export default function UploadResume() {
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const isUploading = false;
+    const isUploading = useAnalysisStore((state) => state.isAnalyzing);
+    const startAnalysis = useAnalysisStore((state) => state.startAnalysis);
     const [uploadError, setUploadError] = useState<string>(location.state?.error || "");
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleAnalyseResume = (): void => {
         if (!selectedFile) return;
+        startAnalysis(selectedFile);
         navigate("/analysing", { state: { file: selectedFile } });
     };
 
