@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, Loader2, Clock3 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
+import { useAnalysisStore } from "../store";
 import "../styles/analysingResume.css";
 
 const statusMessages = [
@@ -18,14 +18,16 @@ const statusMessages = [
 ];
 
 export default function AnalysingResume(): React.JSX.Element {
-  const location = useLocation();
   const navigate = useNavigate();
-  const file = location.state?.file as File | undefined;
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const hasStartedRef = useRef<boolean>(false);
   const analysisProgress = 66; // 66% represented visually
+
+  const isAnalyzing = useAnalysisStore((state) => state.isAnalyzing);
+  const analysisResult = useAnalysisStore((state) => state.analysisResult);
+  const analysisError = useAnalysisStore((state) => state.analysisError);
+  const fileName = useAnalysisStore((state) => state.fileName);
+  const abortAnalysis = useAnalysisStore((state) => state.abortAnalysis);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,67 +38,38 @@ export default function AnalysingResume(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (!file) {
-      navigate("/upload");
-      return;
-    }
-
-    if (hasStartedRef.current) return;
-    if (isAnalyzing) return;
-
-    hasStartedRef.current = true;
-    setTimeout(() => {
-      setIsAnalyzing(true);
-    }, 0);
-
-    const abortController = new AbortController();
-    let isSubscribed = true;
-
-    const performAnalysis = async () => {
-      console.log("Calling /resume/analyze");
-      const formData = new FormData();
-      formData.append("resume", file);
-
-      try {
-        const response = await axios.post("/resume/analyze", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          signal: abortController.signal
+    // If not analyzing currently, evaluate if we have results or errors, otherwise fallback
+    if (!isAnalyzing) {
+      if (analysisResult) {
+        navigate("/result", {
+          state: {
+            analysis: analysisResult,
+            fileName: fileName
+          }
         });
-        if (isSubscribed) {
-          console.log("Extraction and Analysis Result:", response.data);
-          navigate("/result", {
-            state: {
-              analysis: response.data?.data?.analysis,
-              fileName: file.name
-            }
-          });
-        }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log("Analysis request aborted on unmount");
-          return;
-        }
-        if (isSubscribed) {
-          console.error("Upload error during analysis:", error);
-          const err = error as { response?: { data?: { error?: string } } };
-          const errorMessage = err.response?.data?.error || "Failed to upload and analyze resume.";
-          navigate("/upload", { state: { error: errorMessage } });
-        }
+      } else if (analysisError) {
+        navigate("/result", {
+          state: {
+            error: analysisError
+          }
+        });
+      } else {
+        navigate("/upload");
       }
-    };
+    }
+  }, [isAnalyzing, analysisResult, analysisError, fileName, navigate]);
 
-    performAnalysis();
-
+  useEffect(() => {
     return () => {
-      isSubscribed = false;
-      abortController.abort();
-      hasStartedRef.current = false;
-      setIsAnalyzing(false);
+      // Delay abort check to prevent StrictMode double-mount from cancelling active API call
+      setTimeout(() => {
+        if (window.location.pathname !== "/analysing" && window.location.pathname !== "/result") {
+          console.log("Navigated away from analysis pages, aborting analysis...");
+          abortAnalysis();
+        }
+      }, 50);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, navigate]);
+  }, [abortAnalysis]);
 
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col overflow-x-hidden">
