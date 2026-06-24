@@ -6,7 +6,6 @@ import HowItWorks from "../components/HowItWorks";
 import Features from "../components/Features";
 import CTA from "../components/CTA";
 import Footer from "../components/Footer";
-import { useUserStore } from "../store";
 import "../styles/landingPage.css";
 
 export default function LandingPage(): React.JSX.Element {
@@ -14,9 +13,6 @@ export default function LandingPage(): React.JSX.Element {
     const featuresRef = useRef<HTMLElement | null>(null);
     const howItWorksRef = useRef<HTMLElement | null>(null);
     const [isScrolled, setIsScrolled] = useState<boolean>(false);
-
-    const user = useUserStore((state) => state.user);
-    const isAuthenticated = useUserStore((state) => state.isAuthenticated);
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -41,7 +37,6 @@ export default function LandingPage(): React.JSX.Element {
 
     const handleGetStarted = () => navigate("/register");
     const handleSignIn = () => navigate("/login");
-    const handleGoToDashboard = () => navigate("/dashboard");
 
     const handleFeaturesNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -61,9 +56,6 @@ export default function LandingPage(): React.JSX.Element {
                 handleFeaturesNavigation={handleFeaturesNavigation}
                 handleGetStarted={handleGetStarted}
                 handleSignIn={handleSignIn}
-                isAuthenticated={isAuthenticated}
-                username={user?.name || "User"}
-                handleGoToDashboard={handleGoToDashboard}
             />
             <Hero handleGetStarted={handleGetStarted} />
             <HowItWorks ref={howItWorksRef} />
