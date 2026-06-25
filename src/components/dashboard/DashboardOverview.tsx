@@ -88,9 +88,9 @@ export default function DashboardOverview({
                         <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 border border-emerald-100">
                             <Eye className="w-6 h-6" />
                         </div>
-                        <span className="text-emerald-600 font-bold text-xs bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100/50">
+                        {/* <span className="text-emerald-600 font-bold text-xs bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100/50">
                             +12% vs last month
-                        </span>
+                        </span> */}
                     </div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Scans</p>
                     <h2 className="text-4xl font-black text-slate-800">{totalScans}</h2>
@@ -102,9 +102,9 @@ export default function DashboardOverview({
                         <div className="p-3 bg-amber-50 rounded-xl text-amber-600 border border-amber-100">
                             <Star className="w-6 h-6" />
                         </div>
-                        <span className="text-amber-600 font-bold text-xs bg-amber-50/50 px-2 py-1 rounded-lg border border-amber-100/50">
+                        {/* <span className="text-amber-600 font-bold text-xs bg-amber-50/50 px-2 py-1 rounded-lg border border-amber-100/50">
                             Top 5% Users
-                        </span>
+                        </span> */}
                     </div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Best Score</p>
                     <h2 className="text-4xl font-black text-slate-800">{bestScore}</h2>
@@ -115,12 +115,12 @@ export default function DashboardOverview({
             <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden ambient-shadow">
                 <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                     <h3 className="text-lg font-bold text-slate-800">Recent Scans</h3>
-                    <button
+                    {scans.length > 0 && <button
                         onClick={onViewAll}
                         className="text-primary font-bold text-sm hover:underline cursor-pointer bg-transparent border-none"
                     >
                         View All
-                    </button>
+                    </button>}
                 </div>
                 <div className="divide-y divide-slate-100">
                     {scans.length > 0 ? (
